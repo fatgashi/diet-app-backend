@@ -3,10 +3,10 @@ function transformUserInputToModelFormat(userInput) {
     const questionToFeatureMapping = {
         "Select your age group!": { featureName: "Group_Age", valueMapping: { "18-25": "18-25", "26-35": "26-35", "36-45": "36-45", "46+": "46+" /* add all age groups */ }},
         "Select your gender!": { featureName: "Gender", valueMapping: { "Male": "Male", "Female": "Female" }},
-        "Choose your current body type":{featureName: "Current_Body_Type", valueMapping: {"Average": "Average", "Slightly overweight": "Slightly overweight", "Overweight": "Overweight"}},
-        "Choose the body type you want to have": {featureName: "Desired_Body_Type", valueMapping: {"Fit": "Fit", "Cut": "Cut", "Bulk": "Bulk"}},
+        "Choose your current body type":{featureName: "Current_Body_Type", valueMapping: {"Average": "Average", "Slightly overweight": "Slightly overweight", "Overweight": "Overweight", "Plump": "Plump", "Extra": "Extra"}},
+        "Choose the body type you want to have": {featureName: "Desired_Body_Type", valueMapping: {"Fit": "Fit", "Cut": "Cut", "Bulk": "Bulk", "Athletic": "Athletic", "Shapely": "Shapely"}},
         "What do you want to achieve?": {featureName: "Goals", valueMapping: {"Lose weight": "Lose weight", "Boost brain power": "Boost brain power", "Improve blood pressure": "Improve blood pressure", "Increase life expectancy": "Increase life expectancy", "Reduce cholesterol level": "Reduce cholesterol level", "Sleep better": "Sleep better", "Improve bone health": "Improve bone health", "Reduce the risk of cancer": "Reduce the risk of cancer"}},
-        "Choose your target zones": {featureName: "Target_Zones", valueMapping: {"Belly": "Belly", "Butt": "Butt", "Pecs": "Pecs", "Legs": "Legs"}},
+        "Choose your target zones": {featureName: "Target_Zones", valueMapping: {"Belly": "Belly", "Butt": "Butt", "Pecs": "Pecs", "Legs": "Legs", "Breasts": "Breasts"}},
         "When were you last happy with your weight?": {featureName: "Last_Time_Happy_With_Weight", valueMapping: {"Less than a year ago": "Less than a year ago", "1 or 2 years ago": "1 or 2 years ago", "More than 3 years ago": "More than 3 years ago", "Never": "Never"}},
         "What time do you usually eat breakfast?": {featureName: "Breakfast_Timing", valueMapping: {"Before 7:00 am": "Before 7:00 am", "After 7:00 am": "After 7:00 am", "Between 9 to 11 am": "Between 9 to 11 am", "I usually skip breakfast": "I usually skip breakfast"}},
         "What about lunch?": {featureName: "Lunch_Timing", valueMapping: {"Before 1:00 pm": "Before 1:00 pm", "Between 1 and 2 pm": "Between 1 and 2 pm", "Between 2 and 4 pm": "Between 2 and 4 pm", "I usually skip lunch": "I usually skip lunch"}},
@@ -37,7 +37,7 @@ function transformUserInputToModelFormat(userInput) {
 
     const multipleChoiceFields = {
         "Goals": ["Lose weight","Boost brain power", "Improve blood pressure","Increase life expectancy", "Reduce cholesterol level", "Sleep better", "Improve bone health","Reduce the risk of cancer"],
-        "Target_Zones": ["Belly","Butt","Pecs","Legs"],
+        "Target_Zones": ["Belly","Butt","Pecs","Legs", "Breasts"],
         "Interests": ["Lose weight","Fat Burn","Energy Boost","Metabolism Boost","Better Figure","Reduce Blood Sugar Levels","Insulin Resistance","Better Sleep","Increased Life Expectancy","Lowered Cholesterol Levels","Heart Health"],
         "Health_Conditions": ["No I don't","Diabetes","Heart disease", "High blood pressure","High cholesterol","Mental Health disorders","Chronic kidney disease (CKD)","Cancer","Gastrointestinal disorder","Physical disability","Other"],
         "Medication": ["None of them","Vitamins","Hormones","Antibiotics"],

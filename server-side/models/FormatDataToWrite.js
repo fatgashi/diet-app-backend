@@ -1,5 +1,5 @@
-function transformUserInputToModelFormat(userInput) {
-    // Example mapping (you'll need to expand this with all your questions and answers)
+function transformUserInputToWrite(userInput) {
+    
     const questionToFeatureMapping = {
         "Select your age group!": { featureName: "Group_Age", valueMapping: { "18-25": "18-25", "26-35": "26-35", "36-45": "36-45", "46+": "46+" /* add all age groups */ }},
         "Select your gender!": { featureName: "Gender", valueMapping: { "Male": "Male", "Female": "Female" }},
@@ -32,29 +32,14 @@ function transformUserInputToModelFormat(userInput) {
         "What is your current weight?": {featureName: "Current_Weight"},
         "What would you consider your perfect weight?": {featureName: "Perfect_Weight"},
         "What is your age?": {featureName: "Age"}
-        // Add mappings for all other questions
-    };
-
-    const multipleChoiceFields = {
-        "Goals": ["Lose weight","Boost brain power", "Improve blood pressure","Increase life expectancy", "Reduce cholesterol level", "Sleep better", "Improve bone health","Reduce the risk of cancer"],
-        "Target_Zones": ["Belly","Butt","Pecs","Legs", "Breasts"],
-        "Interests": ["Lose weight","Fat Burn","Energy Boost","Metabolism Boost","Better Figure","Reduce Blood Sugar Levels","Insulin Resistance","Better Sleep","Increased Life Expectancy","Lowered Cholesterol Levels","Heart Health"],
-        "Health_Conditions": ["No I don't","Diabetes","Heart disease", "High blood pressure","High cholesterol","Mental Health disorders","Chronic kidney disease (CKD)","Cancer","Gastrointestinal disorder","Physical disability","Other"],
-        "Medication": ["None of them","Vitamins","Hormones","Antibiotics"],
-        "Bad_Habits": ["None of them","Unable to rest enough","I love chocolate and candy","Soda is my best friend","I consume a lot of salty food","I'm a midnight snacker"]
-        // Add other multiple-choice fields here
+        
     };
 
     // Initialize an object to hold the transformed features
     let transformedFeatures = {};
 
-    Object.keys(multipleChoiceFields).forEach(field => {
-        multipleChoiceFields[field].forEach(choice => {
-            transformedFeatures[field + "_" + choice] = 0; // Use the appropriate format for your model
-        });
-    });
 
-    // Iterate over the user answers to transform and map them to model features
+    // Iterating over the user answers to transform and map them to model features
     userInput.forEach(answerObj => {
         let questionText = answerObj.question.en; // Assuming we're using the English version for keys
         let answerText = Array.isArray(answerObj.answer) ? answerObj.answer.map(a => a.en) : answerObj.answer.en;
@@ -67,9 +52,7 @@ function transformUserInputToModelFormat(userInput) {
                 transformedFeatures[mappingInfo.featureName] = answerObj.answer.answer ? parseInt(answerObj.answer.answer) : parseInt(answerObj.answer);
             }
             else if (Array.isArray(answerText)) { // Handle multiple answers
-                answerText.forEach(singleAnswer => {
-                    transformedFeatures[mappingInfo.featureName + "_" + singleAnswer] = 1;
-                });
+                transformedFeatures[mappingInfo.featureName] = answerText.toString().replace(",", "; ");
             } else { // Handle single answer
                 if (mappingInfo.valueMapping) { // Categorical mapping
                     transformedFeatures[mappingInfo.featureName] = mappingInfo.valueMapping[answerText] || answerText;
@@ -80,11 +63,7 @@ function transformUserInputToModelFormat(userInput) {
         }
     });
 
-    // Fill in missing features with default values (e.g., 0 for binary features)
-    // This step is necessary to ensure the model receives all expected features
-    // Add logic here based on your model's requirements
-
     return transformedFeatures;
 }
 
-module.exports = transformUserInputToModelFormat;
+module.exports = transformUserInputToWrite;

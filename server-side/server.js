@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const predictionsRoute = require('./routes/predictionsRoute');
 const mongoose = require('mongoose');
 const dietTypesRoute = require('./routes/dietTypeRoute');
+const mealPlanRoutes = require('./routes/mealPlanRoute');
 const app = express();
 
 
@@ -16,6 +17,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use('/predictions', predictionsRoute);
 app.use('/dietType', dietTypesRoute);
+app.use('/mealPlan', mealPlanRoutes);
 
 const httpServer = require('http').createServer(app);
 

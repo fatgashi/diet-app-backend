@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const DietSchema = new Schema({
   type: { type: String, unique: true, required: true }, // e.g., Keto, Vegan
   description: { type: String, required: true },
+  photo: {type: String, required: true},
   benefits: [String], // List of health benefits
   idealFor: [String], // Conditions or goals this diet is ideal for
   restrictions: [String], // List of food restrictions or allergies accommodated

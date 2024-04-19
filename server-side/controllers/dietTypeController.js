@@ -20,6 +20,22 @@ const dietType = {
         } catch(err){
             res.status(500).send("Internal Server Error!");
         }
+    },
+
+    getDietType: async (req,res) => {
+        try {
+            const { type } = req.params
+
+            const data = await Diet.find({type: type.trim()});
+
+            if(!data.length){
+                return res.status(404).send("Diet Type not Found !");
+            }
+
+            res.send(data);
+        } catch (error) {
+            res.status(500).send(error);
+        }
     }
 }
 

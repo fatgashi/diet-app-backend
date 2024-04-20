@@ -25,7 +25,22 @@ const mealPlan = {
         } catch (err) {
             res.status(500).send("Internal Server Error!")
         }
-    }
+    },
+
+    getMealPlan: async (req,res) => {
+        try {
+            const { id } = req.params;
+    
+            const data = await MealPlan.find({dietType: id});
+    
+            if(!data.length) return res.status(404).send("Meal Plan not found!");
+    
+            res.send(data);
+            
+        } catch (error) {
+            res.status(500).send("Internal Server Error!");
+        }
+    },
 }
 
 module.exports = mealPlan

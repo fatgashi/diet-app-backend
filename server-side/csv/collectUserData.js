@@ -6,7 +6,7 @@ function writeTransformedDataToCSV(transformedData) {
     const ws = fs.createWriteStream('C:/Users/Dell/Desktop/questionnaire_responses.csv', {flags: "a"});
 
     ws.on('finish', () => {
-        console.log('Successfully wrote to the CSV file.');
+        // console.log('Successfully wrote to the CSV file.');
     });
     // Write the transformed data to the CSV file
     // fast-csv will convert the array of objects to CSV format

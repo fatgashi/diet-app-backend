@@ -3,9 +3,11 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require('body-parser');
 const predictionsRoute = require('./routes/predictionsRoute');
+const passport = require('passport');
 const mongoose = require('mongoose');
 const dietTypesRoute = require('./routes/dietTypeRoute');
 const mealPlanRoutes = require('./routes/mealPlanRoute');
+const userRouter = require('./routes/userRoute');
 const app = express();
 
 
@@ -15,9 +17,12 @@ mongoose.connect(`${process.env.MONGO_URL}`)
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(passport.initialize());
+require('./config/passport')(passport);
 app.use('/predictions', predictionsRoute);
 app.use('/dietType', dietTypesRoute);
 app.use('/mealPlan', mealPlanRoutes);
+app.use('/user', userRouter);
 
 const httpServer = require('http').createServer(app);
 

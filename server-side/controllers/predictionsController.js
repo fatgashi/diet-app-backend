@@ -13,11 +13,11 @@ const Predictions = {
         writeTransformedDataToCSV(data);
 
         try {
-            const response = await axios.post('http://localhost:5000', transformedData);
-            res.send(response.data); // Send the prediction back to the frontend
+            const response = await axios.post('http://127.0.0.1:5000', transformedData);
+            res.send(response.data);
         } catch (error) {
-            console.error('Error calling Python API:', error.message);
-            res.status(500).send({error: 'Internal Server Error'});
+            console.log('Error calling Python API:', error.message);
+            res.status(500).send('Internal Server Error');
         }
 
     }

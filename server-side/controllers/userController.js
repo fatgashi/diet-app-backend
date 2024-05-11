@@ -38,8 +38,7 @@ const userController = {
               surname,
               username,
               password: hashedPassword,
-              email,
-              role: 'client',
+              email
             });
         
             // Save the user to the database
@@ -75,19 +74,22 @@ const userController = {
         passport.authenticate('local', { session: false }, (err, user, info) => {
             if (err) {
               console.error(err);
-              return res.status(500).json({ message: 'Internal server error' });
+              return res.status(500).send({ message: 'Internal server error' });
             }
         
             if (!user) {
-              return res.status(401).json({ message: 'Invalid credentials' });
+              return res.status(401).send('Invalid credentials');
             }
         
             // Generate JWT token
             const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: '1h'});
         
-            res.json({ token });
+            res.send({ token });
           })(req, res, next);
     },
+    getProfile: (req,res) => {
+      res.json(req.user);
+  },
 }
 
 module.exports = userController

@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const dietTypesRoute = require('./routes/dietTypeRoute');
 const mealPlanRoutes = require('./routes/mealPlanRoute');
 const userRouter = require('./routes/userRoute');
+const dietAssessmentRoute = require('./routes/dietAssessmentRoute');
 const app = express();
 
 
@@ -23,6 +24,7 @@ app.use('/predictions', predictionsRoute);
 app.use('/dietType', dietTypesRoute);
 app.use('/mealPlan', mealPlanRoutes);
 app.use('/user', userRouter);
+app.use('/diet-assessment', dietAssessmentRoute);
 
 const httpServer = require('http').createServer(app);
 

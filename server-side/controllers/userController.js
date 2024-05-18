@@ -11,6 +11,7 @@ const userController = {
 
         let session = null;
         
+        
         try {
             // Check if username is already taken
             const existingUser = await User.findOne({ username });
@@ -47,17 +48,20 @@ const userController = {
             if (answers && dietType) {
                     const newDietAssessment = new DietAssessment({
                     user: savedUser._id,
-                    answers: new Map(Object.entries(answers)),
+                    answers,
                     dietType
                 });
         
                 await newDietAssessment.save({ session });
+                
             }
 
             await session.commitTransaction();
             session.endSession();
+
+            const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {expiresIn: '1h'});
         
-            res.status(201).send('You have registered successfully!');
+            res.status(201).send({token, message: "You have Registered Successfully!"});
 
         } catch (err) {
 
@@ -65,6 +69,8 @@ const userController = {
                 await session.abortTransaction();
                 session.endSession();
             }
+
+            console.log(err.message);
 
             res.status(500).send(err.message)
           
@@ -89,7 +95,7 @@ const userController = {
     },
     getProfile: (req,res) => {
       res.json(req.user);
-  },
+    },
 }
 
 module.exports = userController

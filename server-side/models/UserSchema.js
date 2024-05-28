@@ -15,11 +15,19 @@ const UserSchema = new Schema({
         unique: true
     },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    password: { 
+        type: String, 
+        required: true,  
+        minlength: [8, '(`{PATH}`) `{VALUE}` is shorter than the minimum allowed length (8).'],
+    },
     role: { 
         type: String, 
         enum: ['client', 'admin'], 
         default: 'client' 
+    },
+    suspended: {
+        type: Boolean,
+        default: false
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }

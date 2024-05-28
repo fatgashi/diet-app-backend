@@ -32,4 +32,4 @@ const httpServer = require('http').createServer(app);
 const port = process.env.PORT;
 
 
-httpServer.listen(port, () => console.log(`Up & Running on port ${port}`));
+httpServer.listen(port, '0.0.0.0', () => console.log(`Up & Running on port ${port}`));

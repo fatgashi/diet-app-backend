@@ -7,6 +7,10 @@ const DataAssessment = {
             const user = req.user;
 
             const dataDiet = await DietAssessment.find({user: user._id}).sort({date: -1});
+
+            if(!dataDiet){
+                return res.status(404).json("You haven't completed a questionnaire yet!");
+            }
             
             res.json(dataDiet);
         } catch (error) {
@@ -53,7 +57,7 @@ const DataAssessment = {
             const getDietAssessment = await DietAssessment.find({user: user._id}).sort({date: -1}).limit(2);
     
             if(getDietAssessment.length !== 2){
-                return res.send(400).json({message: "You don't have enough data yet!"});
+                return res.status(404).json("You don't have enough data yet!");
             }
 
             res.json(getDietAssessment);

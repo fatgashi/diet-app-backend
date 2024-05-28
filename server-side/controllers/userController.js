@@ -16,13 +16,13 @@ const userController = {
             // Check if username is already taken
             const existingUser = await User.findOne({ username });
             if (existingUser) {
-              return res.status(400).send('Username already taken!');
+              return res.status(400).json({message: 'Username already taken!'});
             }
 
             const existingEmail = await User.findOne({ email });
             
             if (existingEmail) {
-              return res.status(400).send('Email already taken!');
+              return res.status(400).json({message: 'Email already taken!'});
             }
 
         
@@ -70,10 +70,16 @@ const userController = {
                 session.endSession();
             }
 
-            console.log(err.message);
-
-            res.status(500).send(err.message)
-          
+            if (err.errors) {
+              const errorMessages = {};
+  
+              for (const field in err.errors) {
+                errorMessages[field] = err.errors[field].message;
+              }
+              res.status(400).json(errorMessages);
+            } else {
+              res.status(500).json({ message: 'Internal server error' });
+            }
         }
     },
     login: async(req,res,next) => {
@@ -96,6 +102,28 @@ const userController = {
     getProfile: (req,res) => {
       res.json(req.user);
     },
+
+    getUsersByCondition: async (req,res) => {
+      const { sort, limit, skip } = req.query;
+      const sortOptions = {};
+
+      if (sort) {
+          const [field, order] = sort.split(':');
+          sortOptions[field] = order === 'desc' ? -1 : 1;
+      }
+
+      try {
+          const total = await User.countDocuments(); // Total number of users
+          const users = await User.find()
+              .sort(sortOptions)
+              .limit(parseInt(limit))
+              .skip(parseInt(skip));
+
+          res.status(200).json({ users, total });
+      } catch (error) {
+          res.status(500).json({ message: error.message });
+      }
+    }
 }
 
 module.exports = userController

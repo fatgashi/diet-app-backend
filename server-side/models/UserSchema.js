@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+function capitalizeFirstLetter(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
 const UserSchema = new Schema({
     name: {type: String, required: true, minlength: [2, '(`{PATH}`) `{VALUE}` is shorter than the minimum allowed length (2).']},
     surname: {
@@ -31,6 +35,16 @@ const UserSchema = new Schema({
     },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
+});
+
+UserSchema.pre('save', function(next) {
+    if (this.isModified('name')) {
+        this.name = capitalizeFirstLetter(this.name);
+    }
+    if (this.isModified('surname')) {
+        this.surname = capitalizeFirstLetter(this.surname);
+    }
+    next();
 });
 
 const User = mongoose.model('User', UserSchema);

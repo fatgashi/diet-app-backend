@@ -90,7 +90,11 @@ const userController = {
             }
         
             if (!user) {
-              return res.status(401).send('Invalid credentials');
+              return res.status(401).json({message: 'Your username or password is incorrect!'});
+            }
+
+            if (user.suspended) {
+              return res.status(403).json({ message: 'Your account has been suspended. Please contact support.' });
             }
         
             // Generate JWT token
@@ -113,15 +117,31 @@ const userController = {
       }
 
       try {
-          const total = await User.countDocuments(); // Total number of users
-          const users = await User.find()
+          const total = await User.countDocuments({role: 'client'}); // Total number of clients
+          const users = await User.find({role: 'client'})
               .sort(sortOptions)
               .limit(parseInt(limit))
               .skip(parseInt(skip));
 
           res.status(200).json({ users, total });
       } catch (error) {
-          res.status(500).json({ message: error.message });
+          res.status(500).json({ message: "Internal Server Error!" });
+      }
+    },
+
+    suspendUsers: async (req,res) => {
+      const { userId, suspended } = req.body
+
+      try {
+
+        await User.findByIdAndUpdate(userId, {
+          suspended
+        })
+
+        res.status(204).json("Updated!")
+        
+      } catch (error) {
+          res.status(500).json({ message: "Internal Server Error!" });
       }
     }
 }

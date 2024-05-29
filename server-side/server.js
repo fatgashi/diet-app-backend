@@ -9,6 +9,8 @@ const dietTypesRoute = require('./routes/dietTypeRoute');
 const mealPlanRoutes = require('./routes/mealPlanRoute');
 const userRouter = require('./routes/userRoute');
 const dietAssessmentRoute = require('./routes/dietAssessmentRoute');
+const User = require('./models/UserSchema');
+const statisticsRoute = require('./routes/statisticsRoute');
 const app = express();
 
 
@@ -25,6 +27,7 @@ app.use('/dietType', dietTypesRoute);
 app.use('/mealPlan', mealPlanRoutes);
 app.use('/user', userRouter);
 app.use('/diet-assessment', dietAssessmentRoute);
+app.use('/statistics', statisticsRoute);
 
 const httpServer = require('http').createServer(app);
 

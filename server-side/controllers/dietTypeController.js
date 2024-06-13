@@ -4,10 +4,11 @@ const Diet = require("../models/DietTypeSchema");
 const dietType = {
     addDietType: async (req,res) => {
         try {
-            const { type, description, benefits, idealFor, restrictions } = req.body;
+            const { type, photo, description, benefits, idealFor, restrictions } = req.body;
             const newDietType = new Diet({
                 type,
                 description,
+                photo,
                 benefits,
                 idealFor,
                 restrictions
@@ -18,6 +19,7 @@ const dietType = {
             res.status(201).send("Diet Created Successfully!");
 
         } catch(err){
+            console.log(err.message)
             res.status(500).send("Internal Server Error!");
         }
     },

@@ -8,6 +8,7 @@ const userRouter = express.Router();
 userRouter.post('/register', userController.register);
 userRouter.post('/login', userController.login);
 userRouter.post('/suspendUser', isAdmin, userController.suspendUsers);
+userRouter.post('/updateProfile', passport.authenticate('jwt', { session: false }), userController.updateUser);
 
 userRouter.get('/profile', passport.authenticate('jwt', { session: false }), userController.getProfile);
 userRouter.get('/getUsers', isAdmin, userController.getUsersByCondition);

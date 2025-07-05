@@ -20,14 +20,14 @@ mongoose.connect(`${process.env.MONGO_URL}`)
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(passport.initialize());
 require('./config/passport')(passport);
-app.use('/predictions', predictionsRoute);
-app.use('/dietType', dietTypesRoute);
-app.use('/mealPlan', mealPlanRoutes);
-app.use('/user', userRouter);
-app.use('/diet-assessment', dietAssessmentRoute);
-app.use('/statistics', statisticsRoute);
+app.use(passport.initialize());
+app.use('/api/predictions', predictionsRoute);
+app.use('/api/dietType', dietTypesRoute);
+app.use('/api/mealPlan', mealPlanRoutes);
+app.use('/api/user', userRouter);
+app.use('/api/diet-assessment', dietAssessmentRoute);
+app.use('/api/statistics', statisticsRoute);
 
 const httpServer = require('http').createServer(app);
 

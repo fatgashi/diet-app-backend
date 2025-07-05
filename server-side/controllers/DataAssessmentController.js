@@ -18,6 +18,48 @@ const DataAssessment = {
         }
     },
 
+    getDietAssessmentDetails: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const userId = req.user._id;
+
+            const assessment = await DietAssessment.findOne({ _id: id, user: userId });
+
+            if (!assessment) {
+            return res.status(404).json({ message: 'Assessment not found.' });
+            }
+
+            res.json(assessment);
+        } catch (err) {
+            console.error('Assessment Fetch Error:', err);
+            res.status(500).json({ message: 'Internal server error.' });
+        }
+    },
+
+    deleteAssessment: async (req, res) => {
+        try {
+            const userId = req.user.id;
+            const assessmentId = req.params.id;
+
+            const assessment = await DietAssessment.findOne({ _id: assessmentId, user: userId });
+
+            if (!assessment) {
+            return res.status(404).json({ message: 'Assessment not found.' });
+            }
+
+            if (assessment.paid) {
+                return res.status(403).json({ message: 'Cannot delete a paid assessment.' });
+            }
+
+            await DietAssessment.deleteOne({ _id: assessmentId });
+
+            res.json({ message: 'Assessment deleted successfully.' });
+        } catch (error) {
+            console.error('Delete error:', error);
+            res.status(500).json({ message: 'Server error while deleting assessment.' });
+        }
+    },
+
     addDataAssessmentFromUser: async (req,res) => {
         const { answers, dietType } = req.body;
 

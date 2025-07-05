@@ -2,6 +2,7 @@ const express = require('express');
 const userController = require('../controllers/userController');
 const passport = require('passport');
 const { isAdmin } = require('../middleware/authorization');
+const jwt = require('jsonwebtoken');
 
 const userRouter = express.Router();
 
@@ -12,5 +13,23 @@ userRouter.post('/updateProfile', passport.authenticate('jwt', { session: false 
 
 userRouter.get('/profile', passport.authenticate('jwt', { session: false }), userController.getProfile);
 userRouter.get('/getUsers', isAdmin, userController.getUsersByCondition);
+userRouter.post('/save-answers', passport.authenticate('jwt', { session: false }), userController.saveAnswers);
+
+userRouter.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+userRouter.get('/discount-offer', passport.authenticate('jwt', { session: false }), userController.discountOffer);
+
+// Step 2: Handle Google callback
+userRouter.get('/auth/google/callback',
+  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  (req, res) => {
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    // You can redirect back to Vue frontend with the token
+    res.redirect(`http://localhost:8080/auth/google/success?token=${token}`);
+  }
+);
 
 module.exports = userRouter;

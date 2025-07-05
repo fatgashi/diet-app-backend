@@ -3,85 +3,79 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/UserSchema');
 const passport = require('passport');
 const DietAssessment = require('../models/DietAssessmentSchema');
-const mongoose = require('mongoose');
 
 const userController = {
-    register: async (req,res) => {
-        const { name, surname, username, password, email, answers, dietType } = req.body;
+    register: async (req, res) => {
+      const { name, password, email, answers } = req.body;
 
-        let session = null;
-        
-        
-        try {
-            // Check if username is already taken
-            const existingUser = await User.findOne({ username });
-            if (existingUser) {
-              return res.status(400).json({message: 'Username already taken!'});
-            }
+      // Validate required fields
+      if (!name || !password || !email) {
+        return res.status(400).json({ message: 'Please fill in all fields.' });
+      }
 
-            const existingEmail = await User.findOne({ email });
-            
-            if (existingEmail) {
-              return res.status(400).json({message: 'Email already taken!'});
-            }
+      try {
+        // Check if email exists
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) return res.status(400).json({ message: 'Email already taken!' });
 
-        
-            // Generate salt and hash password
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-            const session = await mongoose.startSession();
-            session.startTransaction();
-        
-            // Create new user object
-            const newUser = new User({
-              name,
-              surname,
-              username,
-              password: hashedPassword,
-              email
-            });
-        
-            // Save the user to the database
-            const savedUser = await newUser.save({ session });
+        // Create new user
+        const newUser = new User({
+          name,
+          email,
+          discountOffer: {
+            startTime: new Date(),
+            isActive: true
+          },
+          password: hashedPassword
+        });
 
-            if (answers && dietType) {
-                    const newDietAssessment = new DietAssessment({
-                    user: savedUser._id,
-                    answers,
-                    dietType
-                });
-        
-                await newDietAssessment.save({ session });
-                
-            }
+        const savedUser = await newUser.save();
 
-            await session.commitTransaction();
-            session.endSession();
-
-            const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, {expiresIn: '1h'});
-        
-            res.status(201).send({token, message: "You have Registered Successfully!"});
-
-        } catch (err) {
-
-            if (session) {
-                await session.abortTransaction();
-                session.endSession();
-            }
-
-            if (err.errors) {
-              const errorMessages = {};
-  
-              for (const field in err.errors) {
-                errorMessages[field] = err.errors[field].message;
-              }
-              res.status(400).json(errorMessages);
-            } else {
-              res.status(500).json({ message: 'Internal server error' });
-            }
+        // Save diet assessment with just answers (no dietType yet)
+        if (answers && Array.isArray(answers)) {
+          const newDietAssessment = new DietAssessment({
+            user: savedUser._id,
+            answers // no dietType yet
+          });
+          await newDietAssessment.save();
         }
+
+        const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+        res.status(201).send({ token, message: "You have Registered Successfully!" });
+
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+      }
     },
+
+    discountOffer: async (req, res) => {
+      const user = await User.findById(req.user.id);
+
+      if (!user?.discountOffer?.startTime) {
+        return res.json({ active: false });
+      }
+
+      const now = new Date();
+      const expiry = new Date(user.discountOffer.startTime.getTime() + 30 * 60000); // +30 min
+
+      const stillActive = now < expiry;
+      if (!stillActive) user.discountOffer.isActive = false;
+
+      await user.save();
+
+      res.json({
+        active: stillActive,
+        price: stillActive ? 20 : 35,
+        expiresAt: expiry.toISOString() // ✅ ADD THIS LINE
+      });
+    },
+
     login: async(req,res,next) => {
         passport.authenticate('local', { session: false }, (err, user, info) => {
             if (err) {
@@ -105,6 +99,29 @@ const userController = {
     },
     getProfile: (req,res) => {
       res.json(req.user);
+    },
+
+    saveAnswers: async (req, res) => {
+      const { answers } = req.body;
+      if (!answers || !Array.isArray(answers)) {
+        return res.status(400).json({ message: 'Invalid answers format' });
+      }
+      try {
+        const user = await User.findById(req.user._id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+          const newDietAssessment = new DietAssessment({
+            user: user._id,
+            answers: req.body.answers
+          });
+          await newDietAssessment.save();
+        
+
+        res.json({ success: true });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Failed to save answers' });
+      }
     },
 
     getUsersByCondition: async (req,res) => {

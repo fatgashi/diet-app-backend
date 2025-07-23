@@ -15,6 +15,26 @@ const DietAssessmentSchema = new Schema({
   answers: [AnswerSchema],
   paid: { type: Boolean, default: false },
   dietType: { type: String, default: null }, // Not required anymore
+  dietPlan: {
+    dietType: { type: String, default: '' },
+    summary: { type: String, default: '' },
+    calories: { type: String, default: '' },
+    macros: {
+      carbs: { type: String, default: '' },
+      protein: { type: String, default: '' },
+      fats: { type: String, default: '' }
+    },
+    fastingWindow: { type: String, default: '' },
+    meals: {
+      breakfast: { type: String, default: '' },
+      lunch: { type: String, default: '' },
+      dinner: { type: String, default: '' }
+    },
+    workouts: { type: String, default: '' },
+    lifestyle: { type: String, default: '' },
+    notes: { type: String, default: '' }
+  },
+  completed: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

@@ -3,6 +3,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/UserSchema');
 const passport = require('passport');
 const DietAssessment = require('../models/DietAssessmentSchema');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/emailService');
+const { v4: uuidv4 } = require('uuid');
+const EmailToken = require('../models/EmailTokenSchema');
+const crypto = require('crypto');
 
 const userController = {
     register: async (req, res) => {
@@ -35,18 +39,29 @@ const userController = {
 
         const savedUser = await newUser.save();
 
+        let newDietAssessment = null;
         // Save diet assessment with just answers (no dietType yet)
         if (answers && Array.isArray(answers)) {
-          const newDietAssessment = new DietAssessment({
+          newDietAssessment = new DietAssessment({
             user: savedUser._id,
             answers // no dietType yet
           });
           await newDietAssessment.save();
         }
 
+        const tokenEmail = uuidv4();
+        await EmailToken.create({
+          userId: savedUser._id,
+          token: tokenEmail,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // expires in 24h
+        });
+
+        // Send verification email
+        await sendVerificationEmail(savedUser.email, savedUser.name, tokenEmail);
+
         const token = jwt.sign({ id: savedUser._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-        res.status(201).send({ token, message: "You have Registered Successfully!" });
+        res.status(201).send({ token, message: "You have Registered Successfully!", id: newDietAssessment._id });
 
       } catch (err) {
         console.error(err);
@@ -76,6 +91,35 @@ const userController = {
       });
     },
 
+    verifyEmail: async (req, res) => {
+      const token = req.params.token;
+
+      try {
+        const emailToken = await EmailToken.findOne({ token });
+
+        if (!emailToken) {
+          return res.status(400).json({ success: false, message: 'Invalid or expired token.' });
+        }
+
+        const user = await User.findById(emailToken.userId);
+        if (!user) {
+          return res.status(404).json({ success: false, message: 'User not found.' });
+        }
+
+        // Mark user as verified
+        user.emailVerified = true;
+        await user.save();
+
+        // Remove the used token
+        await EmailToken.deleteOne({ _id: emailToken._id });
+
+        return res.status(200).json({ success: true, message: 'Email successfully verified!' });
+      } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+      }
+    },
+
     login: async(req,res,next) => {
         passport.authenticate('local', { session: false }, (err, user, info) => {
             if (err) {
@@ -84,7 +128,7 @@ const userController = {
             }
         
             if (!user) {
-              return res.status(401).json({message: 'Your username or password is incorrect!'});
+              return res.status(401).json({message: 'Your email or password is incorrect!'});
             }
 
             if (user.suspended) {
@@ -92,7 +136,7 @@ const userController = {
             }
         
             // Generate JWT token
-            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: '1h'});
+            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {expiresIn: '7d'});
         
             res.send({ token });
           })(req, res, next);
@@ -117,11 +161,50 @@ const userController = {
           await newDietAssessment.save();
         
 
-        res.json({ success: true });
+        res.json({ success: true, id: newDietAssessment._id });
       } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Failed to save answers' });
       }
+    },
+
+    forgotPassword: async (req, res) => {
+      const { email } = req.body;
+
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ message: 'User with this email not found!' });
+
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiry = Date.now() + 3600000; // 1 hour
+
+      user.resetPasswordToken = token;
+      user.resetPasswordExpires = expiry;
+      await user.save();
+
+      await sendPasswordResetEmail(user.email, user.name, token);
+
+      res.json({ message: 'Reset link sent to email.' });
+    },
+
+    resetPassword: async (req, res) => {
+      const { token, password } = req.body;
+
+      const user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: Date.now() }
+      });
+
+      if (!user) return res.status(400).json({ message: 'Invalid or expired token' });
+
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      user.password = hashedPassword;
+      user.resetPasswordToken = null;
+      user.resetPasswordExpires = null;
+      await user.save();
+
+      res.json({ message: 'Password reset successfully' });
     },
 
     getUsersByCondition: async (req,res) => {

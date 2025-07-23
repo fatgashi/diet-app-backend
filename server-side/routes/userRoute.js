@@ -15,11 +15,15 @@ userRouter.get('/profile', passport.authenticate('jwt', { session: false }), use
 userRouter.get('/getUsers', isAdmin, userController.getUsersByCondition);
 userRouter.post('/save-answers', passport.authenticate('jwt', { session: false }), userController.saveAnswers);
 
+userRouter.post('/request-password-reset', userController.forgotPassword);
+userRouter.post('/reset-password', userController.resetPassword);
 userRouter.get('/auth/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
 userRouter.get('/discount-offer', passport.authenticate('jwt', { session: false }), userController.discountOffer);
+
+userRouter.get('/verify-email/:token', userController.verifyEmail);
 
 // Step 2: Handle Google callback
 userRouter.get('/auth/google/callback',

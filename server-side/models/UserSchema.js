@@ -13,6 +13,7 @@ const UserSchema = new Schema({
         required: true,
         unique: true
     },
+    emailVerified: { type: Boolean, default: false },
     password: {
         type: String,
     },
@@ -29,6 +30,8 @@ const UserSchema = new Schema({
         type: Boolean,
         default: false
     },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

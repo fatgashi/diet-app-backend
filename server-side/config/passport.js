@@ -52,6 +52,7 @@ module.exports = function(passport) {
             user = await new User({
               name,
               email,
+              emailVerified: true,
               discountOffer: {
                 startTime: new Date(),
                 isActive: true

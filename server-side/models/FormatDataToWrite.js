@@ -1,4 +1,4 @@
-function transformUserInputToWrite(userInput) {
+function transformUserInputToWrite(userInput, assessmentId = '') {
     
     const questionToFeatureMapping = {
         "Select your age group!": { featureName: "Group_Age", valueMapping: { "18-25": "18-25", "26-35": "26-35", "36-45": "36-45", "46+": "46+" /* add all age groups */ }},
@@ -63,6 +63,9 @@ function transformUserInputToWrite(userInput) {
             }
         }
     });
+
+    transformedFeatures.Assessment_ID = assessmentId;
+    transformedFeatures.Diet_Type = '';
 
     return transformedFeatures;
 }

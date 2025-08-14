@@ -3,6 +3,7 @@ const generateDietPdf = require("../services/generateDietPdf");
 const path = require('path');
 const fs = require('fs');
 const { sendPersonalizedDietEmail } = require("../services/emailService");
+const { updateDietTypeInCSV } = require("../csv/updateCsvDietType");
 
 
 const DataAssessment = {
@@ -69,6 +70,17 @@ const DataAssessment = {
             
             const outputPath = path.join(outputDir, `diet_${updated._id}.pdf`);
             await generateDietPdf(updated, outputPath);
+
+            try {
+                await updateDietTypeInCSV(updated._id.toString(), plan.dietType);
+            } catch (csvError) {
+                console.error("CSV update error:", csvError.message);
+                console.error("CSV update error details:", {
+                    assessmentId: updated._id.toString(),
+                    dietType: plan.dietType,
+                    error: csvError.stack
+                });
+            }
 
             // await sendPersonalizedDietEmail(
             //     updated.user.email,
@@ -244,6 +256,65 @@ const DataAssessment = {
             
         } catch (error) {
             return res.status(500).json({ message: '"Internal Server Error!"' });
+        }
+    },
+
+    reapplyDietPlan: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const plan = req.body.plan;
+
+            if (!plan || typeof plan !== 'object') {
+                return res.status(400).json({ message: "Invalid or empty diet plan" });
+            }
+
+            // Find the assessment
+            const assessment = await DietAssessment.findById(id).populate('user', 'name email');
+            if (!assessment) {
+                return res.status(404).json({ message: "Assessment not found" });
+            }
+
+            // Update the diet plan
+            await DietAssessment.findByIdAndUpdate(
+                id,
+                {
+                    dietPlan: plan,
+                    completed: true,
+                    updatedAt: new Date()
+                },
+                { new: true }
+            );
+
+            // Generate new PDF
+            const outputDir = path.join(__dirname, '../pdfs');
+            if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir);
+            
+            const outputPath = path.join(outputDir, `diet_${assessment._id}.pdf`);
+            await generateDietPdf(assessment, outputPath);
+
+            // Update CSV with better error handling
+            let csvUpdateSuccess = false;
+            try {
+                await updateDietTypeInCSV(assessment._id.toString(), plan.dietType);
+                csvUpdateSuccess = true;
+            } catch (csvError) {
+                console.error("CSV update error during reapply:", csvError.message);
+                console.error("CSV update error details:", {
+                    assessmentId: assessment._id.toString(),
+                    dietType: plan.dietType,
+                    error: csvError.stack
+                });
+                // Continue with the operation even if CSV update fails
+            }
+
+            res.json({ 
+                success: true, 
+                message: "Diet plan reapplied successfully",
+                csvUpdated: csvUpdateSuccess
+            });
+        } catch (err) {
+            console.error("Reapply diet plan error:", err);
+            res.status(500).json({ message: "Server error" });
         }
     }
 }

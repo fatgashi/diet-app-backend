@@ -12,6 +12,7 @@ dietAssessmentRoute.get("/lastAssessment", passport.authenticate('jwt', { sessio
 dietAssessmentRoute.get('/admin/:id', isAdmin, DataAssessment.getAssessmentByIdForAdmin);
 dietAssessmentRoute.get('/download-pdf/:id', passport.authenticate('jwt', { session: false }), DataAssessment.downloadDietPlanPdf);
 dietAssessmentRoute.put('/write-plan/:id', isAdmin, DataAssessment.writeStructuredDietPlan);
+dietAssessmentRoute.put('/reapply-plan/:id', isAdmin, DataAssessment.reapplyDietPlan);
 dietAssessmentRoute.get('/details/:id', passport.authenticate('jwt', { session: false }), DataAssessment.getDietAssessmentDetails);
 dietAssessmentRoute.delete('/diet/:id', passport.authenticate('jwt', { session: false }), DataAssessment.deleteAssessment);
 

@@ -7,6 +7,8 @@ const { sendVerificationEmail, sendPasswordResetEmail } = require('../services/e
 const { v4: uuidv4 } = require('uuid');
 const EmailToken = require('../models/EmailTokenSchema');
 const crypto = require('crypto');
+const transformUserInputToWrite = require('../models/FormatDataToWrite');
+const writeTransformedDataToCSV = require('../csv/collectUserData');
 
 const userController = {
     register: async (req, res) => {
@@ -47,6 +49,9 @@ const userController = {
             answers // no dietType yet
           });
           await newDietAssessment.save();
+
+          const data = transformUserInputToWrite(answers, newDietAssessment._id.toString());
+          writeTransformedDataToCSV(data);
         }
 
         const tokenEmail = uuidv4();
@@ -159,6 +164,9 @@ const userController = {
             answers: req.body.answers
           });
           await newDietAssessment.save();
+
+          const data = transformUserInputToWrite(answers, newDietAssessment._id.toString());
+          writeTransformedDataToCSV(data);
         
 
         res.json({ success: true, id: newDietAssessment._id });
